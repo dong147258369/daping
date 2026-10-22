@@ -17,39 +17,39 @@ import RightBottom from "./right-bottom.vue";
         <div class="item">实时监测</div>
         <div class="item">统计分析</div>
       </div> -->
-      <ItemWrap class="contetn_left-top contetn_lr-item" title="设备总览">
-        <LeftTop />
-      </ItemWrap>
-      <ItemWrap class="contetn_left-center contetn_lr-item" title="用户总览">
-        <LeftCenter />
-      </ItemWrap>
       <ItemWrap
         class="contetn_left-bottom contetn_lr-item"
-        title="设备提醒"
+        title="急救通道与出车动态"
         style="padding: 0 10px 16px 10px"
       >
         <LeftBottom />
       </ItemWrap>
+      <ItemWrap class="contetn_left-top contetn_lr-item" title="医疗设备运行监控">
+        <LeftTop />
+      </ItemWrap>
+      <ItemWrap class="contetn_left-center contetn_lr-item" title="患者就诊分类态势">
+        <LeftCenter />
+      </ItemWrap>
     </div>
     <div class="contetn_center">
-      <CenterMap class="contetn_center_top" title="设备分布图" />
-      <ItemWrap class="contetn_center-bottom" title="安装计划">
+      <CenterMap class="contetn_center_top" title="医联体与医疗协作网" />
+      <ItemWrap class="contetn_center-bottom" title="重点科室床位使用率">
         <CenterBottom />
       </ItemWrap>
     </div>
     <div class="contetn_right">
-      <ItemWrap class="contetn_left-bottom contetn_lr-item" title="报警次数">
+      <ItemWrap class="contetn_left-bottom contetn_lr-item" title="重症监护危急值预警">
+        <RightBottom />
+      </ItemWrap>
+      <ItemWrap class="contetn_left-bottom contetn_lr-item" title="门急诊与危急值走势">
         <RightTop />
       </ItemWrap>
       <ItemWrap
         class="contetn_left-bottom contetn_lr-item"
-        title="报警排名(TOP8)"
+        title="科室就诊负荷(TOP8)"
         style="padding: 0 10px 16px 10px"
       >
         <RightCenter />
-      </ItemWrap>
-      <ItemWrap class="contetn_left-bottom contetn_lr-item" title="数据统计图 ">
-        <RightBottom />
       </ItemWrap>
     </div>
   </div>

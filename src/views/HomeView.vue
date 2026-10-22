@@ -17,11 +17,11 @@ const wrapperStyle = {};
   <scale-screen
     width="1920"
     height="1080"
-    :delay="500"
-    :fullScreen="false"
+    :delay="200"
+    :fullScreen="true"
     :boxStyle="{
       background: '#03050C',
-      overflow: isScale ? 'hidden' : 'auto',
+      overflow: 'hidden',
     }"
     :wrapperStyle="wrapperStyle"
     :autoScale="isScale"

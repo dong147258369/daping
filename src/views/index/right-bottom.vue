@@ -15,7 +15,6 @@ const state = reactive<any>({
     ...defaultOption.value,
     singleHeight: 252,
     limitScrollNum: 3,
-    // step:3
   },
   scroll: true,
 });
@@ -23,7 +22,7 @@ const state = reactive<any>({
 const getData = () => {
   rightBottom({ limitNum: 20 })
     .then((res) => {
-      console.log("右下", res);
+      console.log("右下--危急值预警", res);
       if (res.success) {
         state.list = res.data.list;
       } else {
@@ -46,11 +45,10 @@ const comName = computed(() => {
   }
 });
 function montionFilter(val: any) {
-  // console.log(val);
-  return val ? Number(val).toFixed(2) : "--";
+  return val ? val : "--";
 }
 const handleAddress = (item: any) => {
-  return `${item.provinceName}/${item.cityName}/${item.countyName}`;
+  return `${item.provinceName} · ${item.cityName} (${item.countyName})`;
 };
 onMounted(() => {
   getData();
@@ -77,22 +75,22 @@ onMounted(() => {
             <div class="dibu"></div>
             <div class="flex">
               <div class="info">
-                <span class="labels">设备ID：</span>
+                <span class="labels">床位/监护：</span>
                 <span class="text-content zhuyao"> {{ item.gatewayno }}</span>
               </div>
               <div class="info">
-                <span class="labels">型号：</span>
+                <span class="labels">仪器：</span>
                 <span class="text-content"> {{ item.terminalno }}</span>
               </div>
               <div class="info">
                 <span class="labels">告警值：</span>
-                <span class="text-content warning"> {{ montionFilter(item.alertvalue) }}</span>
+                <span class="text-content warning font-bold"> {{ montionFilter(item.alertvalue) }}</span>
               </div>
             </div>
 
             <div class="flex">
               <div class="info">
-                <span class="labels shrink-0"> 地址：</span>
+                <span class="labels shrink-0"> 病区：</span>
                 <span class="ciyao truncate" style="font-size: 12px; width: 220px" :title="handleAddress(item)">
                   {{ handleAddress(item) }}</span
                 >
@@ -104,9 +102,9 @@ onMounted(() => {
             </div>
             <div class="flex">
               <div class="info">
-                <span class="labels">报警内容：</span>
+                <span class="labels">危急预警：</span>
                 <span class="text-content ciyao" :class="{ warning: item.alertdetail }">
-                  {{ item.alertdetail || "无" }}</span
+                  【{{ item.alertname }}】{{ item.alertdetail || "无" }}</span
                 >
               </div>
             </div>

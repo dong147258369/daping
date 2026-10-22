@@ -4,9 +4,27 @@ export interface MapdataType {
   value: [number, number, number]; //x,y,value  第一个x 第二个y  第三个value
 }
 export const optionHandle = (regionCode: string, list: object[], mapData: MapdataType[]) => {
-  console.log(regionCode, list, mapData);
   let top = 45;
   let zoom = ["china"].includes(regionCode) ? 1.05 : 1;
+
+  // 构建全国远程医疗支援飞线
+  const linesData: any[] = [];
+  if (["china"].includes(regionCode) && mapData.length > 1) {
+    const hub = mapData.find((m) => m.name.includes("北京") || m.name.includes("四川")) || mapData[0];
+    mapData.forEach((item) => {
+      if (item.name !== hub.name) {
+        linesData.push({
+          fromName: hub.name,
+          toName: item.name,
+          coords: [
+            [hub.value[0], hub.value[1]],
+            [item.value[0], item.value[1]],
+          ],
+        });
+      }
+    });
+  }
+
   return {
     backgroundColor: "rgba(0,0,0,0)",
     tooltip: {
@@ -20,31 +38,21 @@ export const optionHandle = (regionCode: string, list: object[], mapData: Mapdat
       left: 20,
       bottom: 20,
       pieces: [
-        { gte: 1000, label: "1000个以上" }, // 不指定 max，表示 max 为无限大（Infinity）。
-        { gte: 600, lte: 999, label: "600-999个" },
-        { gte: 200, lte: 599, label: "200-599个" },
-        { gte: 50, lte: 199, label: "49-199个" },
-        { gte: 10, lte: 49, label: "10-49个" },
-        { lte: 9, label: "1-9个" }, // 不指定 min，表示 min 为无限大（-Infinity）。
+        { gte: 1000, label: "1000家以上" },
+        { gte: 600, lte: 999, label: "600-999家" },
+        { gte: 200, lte: 599, label: "200-599家" },
+        { gte: 50, lte: 199, label: "50-199家" },
+        { gte: 10, lte: 49, label: "10-49家" },
+        { lte: 9, label: "1-9家" },
       ],
       inRange: {
-        // 渐变颜色，从小到大
-        // FFFFFF,EDF7FD,DBF0FA,C9E8F8,B7E1F6,A5D9F3,93D2F1,81CAEF,6FC2EC,5DBBEA,4AB3E8,38ACE5,26A4E3,1C9AD9,1A8DC7,
-        // 1781B5,
-        // 1573A2,136790,105A7E,0E4D6C,0C405A,093348,072636,051A24,020D12
         color: [
-          // "#EDF7FD",
-          "rgba(237,247,253,.8)",
-          // "#B7E1F6",
-          "rgba(183,225,246,.9)",
-          // "#81CAEF",
-          "rgba(129,202,239,.9)",
-          // "#38ACE5",
-          "rgba(56,172,229,.9)",
-          // "#1781B5",
-          "rgba(23,129,181,.9)",
-          // "#105A7E",
-          "rgba(16,90,126,0.9)",
+          "rgba(20, 50, 100, 0.6)",
+          "rgba(14, 85, 150, 0.75)",
+          "rgba(22, 120, 200, 0.85)",
+          "rgba(0, 180, 240, 0.85)",
+          "rgba(0, 230, 255, 0.9)",
+          "rgba(80, 255, 230, 0.95)",
         ],
       },
       textStyle: {
@@ -55,7 +63,7 @@ export const optionHandle = (regionCode: string, list: object[], mapData: Mapdat
       {
         map: regionCode,
         roam: false,
-        selectedMode: false, //是否允许选中多个区域
+        selectedMode: false,
         zoom: zoom,
         top: top,
         aspectScale: 0.78,
@@ -63,14 +71,15 @@ export const optionHandle = (regionCode: string, list: object[], mapData: Mapdat
       },
     ],
     series: [
+      // 基础地图
       {
         name: "MAP",
         type: "map",
         map: regionCode,
         aspectScale: 0.78,
         data: list,
-        showLegendSymbol: false, // 禁用默认标记点
-        selectedMode: false, //是否允许选中多个区域
+        showLegendSymbol: false,
+        selectedMode: false,
         zoom: zoom,
         geoIndex: 2,
         top: top,
@@ -78,23 +87,21 @@ export const optionHandle = (regionCode: string, list: object[], mapData: Mapdat
           show: true,
           formatter: function (params: any) {
             if (params.data) {
-              return params.name + "：" + params.data["value"];
+              return params.name + " 协作医院：" + params.data["value"] + " 家";
             } else {
               return params.name;
             }
           },
-          backgroundColor: "rgba(0,0,0,.6)",
-          borderColor: "rgba(147, 235, 248, .8)",
+          backgroundColor: "rgba(10, 24, 52, 0.9)",
+          borderColor: "#00f7f6",
+          borderWidth: 1,
           textStyle: {
             color: "#FFF",
           },
         },
-
         label: {
-          color: "#000",
-          // position: [-10, 0],
+          color: "#e2e8f0",
           formatter: function (val: any) {
-            // console.log(val)
             if (val.data !== undefined) {
               return val.name.slice(0, 2);
             } else {
@@ -103,120 +110,108 @@ export const optionHandle = (regionCode: string, list: object[], mapData: Mapdat
           },
           rich: {},
         },
-
         emphasis: {
           show: false,
           label: {
-            show: false,
+            show: true,
+            color: "#00f7f6",
+            fontWeight: "bold",
           },
           itemStyle: {
-            // areaColor: "rgba(56,155,183,.7)",
-            areaColor: {
-              type: "radial",
-              x: 0.5,
-              y: 0.5,
-              r: 0.8,
-              colorStops: [
-                {
-                  offset: 0,
-                  color: "rgba(147, 235, 248, 0)", // 0% 处的颜色
-                },
-                {
-                  offset: 1,
-                  color: "rgba(56,155,183, .8)", // 100% 处的颜色
-                },
-              ],
-              globalCoord: false, // 缺为 false
-            },
-            borderWidth: 1,
+            areaColor: "rgba(0, 242, 254, 0.4)",
+            borderColor: "#00f7f6",
+            borderWidth: 2,
+            shadowColor: "rgba(0, 242, 254, 0.8)",
+            shadowBlur: 15,
           },
         },
         itemStyle: {
-          borderColor: "rgba(147, 235, 248, .8)",
-          borderWidth: 1,
-          areaColor: {
-            type: "radial",
-            x: 0.5,
-            y: 0.5,
-            r: 0.8,
-            colorStops: [
-              {
-                offset: 0,
-                color: "rgba(147, 235, 248, 0)", // 0% 处的颜色
-              },
-              {
-                offset: 1,
-                color: "rgba(147, 235, 248, .2)", // 100% 处的颜色
-              },
-            ],
-            globalCoord: false, // 缺为 false
-          },
-          shadowColor: "rgba(128, 217, 248, .3)",
+          borderColor: "rgba(0, 247, 246, 0.6)",
+          borderWidth: 1.2,
+          areaColor: "rgba(15, 38, 77, 0.6)",
+          shadowColor: "rgba(0, 180, 255, 0.35)",
           shadowOffsetX: -2,
-          shadowOffsetY: 2,
-          shadowBlur: 10,
+          shadowOffsetY: 4,
+          shadowBlur: 12,
         },
       },
-        {
-          data: mapData,
-          type: "effectScatter",
-          coordinateSystem: "geo",
-          symbolSize: function (val: any) {
-            return 4;
-            // return val[2] / 50;
+      // 远程医疗飞线流光
+      {
+        type: "lines",
+        coordinateSystem: "geo",
+        zlevel: 3,
+        effect: {
+          show: true,
+          period: 4.5,
+          trailLength: 0.3,
+          color: "#00F7F6",
+          symbol: "arrow",
+          symbolSize: 6,
+        },
+        lineStyle: {
+          color: "rgba(0, 247, 246, 0.35)",
+          width: 1.5,
+          opacity: 0.6,
+          curveness: 0.25,
+        },
+        data: linesData,
+        silent: true,
+      },
+      // 协作医院核心发光辐射散点
+      {
+        data: mapData,
+        type: "effectScatter",
+        coordinateSystem: "geo",
+        zlevel: 4,
+        symbolSize: function (val: any) {
+          return Math.max(6, Math.min(14, (val[2] || 100) / 90));
+        },
+        legendHoverLink: true,
+        showEffectOn: "render",
+        rippleEffect: {
+          period: 3.5,
+          scale: 4.5,
+          color: "#00FFFF",
+          brushType: "stroke",
+        },
+        tooltip: {
+          show: true,
+          formatter: function (params: any) {
+            if (params.data) {
+              return params.name + " 协作医院：" + params.data["value"][2] + " 家";
+            } else {
+              return params.name;
+            }
           },
-          legendHoverLink: true,
-          showEffectOn: "render",
-          rippleEffect: {
-            // period: 4,
-            scale: 6,
-            color: "rgba(255,255,255, 1)",
-            brushType: "fill",
-          },
-          tooltip: {
-            show: true,
-            formatter: function (params: any) {
-              if (params.data) {
-                return params.name + "：" + params.data["value"][2];
-              } else {
-                return params.name;
-              }
-            },
-            backgroundColor: "rgba(0,0,0,.6)",
-            borderColor: "rgba(147, 235, 248, .8)",
-            textStyle: {
-              color: "#FFF",
-            },
-          },
-          label: {
-            formatter: (param: any) => {
-              return param.name.slice(0, 2);
-            },
-
-            fontSize: 11,
-            offset: [0, 2],
-            position: "bottom",
-            textBorderColor: "#fff",
-            textShadowColor: "#000",
-            textShadowBlur: 10,
-            textBorderWidth: 0,
+          backgroundColor: "rgba(10, 24, 52, 0.9)",
+          borderColor: "#00f7f6",
+          borderWidth: 1,
+          textStyle: {
             color: "#FFF",
-            show: true,
-          },
-          // colorBy: "data",
-          itemStyle: {
-            color: "rgba(255,255,255,1)",
-            borderColor: "rgba(2255,255,255,2)",
-            borderWidth: 4,
-            shadowColor: "#000",
-            shadowBlur: 10,
           },
         },
+        label: {
+          formatter: (param: any) => {
+            return param.name.slice(0, 2);
+          },
+          fontSize: 11,
+          offset: [0, 4],
+          position: "bottom",
+          textBorderColor: "#051124",
+          textBorderWidth: 2,
+          color: "#00FFFF",
+          fontWeight: "600",
+          show: true,
+        },
+        itemStyle: {
+          color: "#00F7F6",
+          borderColor: "#FFFFFF",
+          borderWidth: 2,
+          shadowColor: "#00FFFF",
+          shadowBlur: 14,
+        },
+      },
     ],
-    //动画效果
-    // animationDuration: 1000,
-    // animationEasing: 'linear',
-    // animationDurationUpdate: 1000
   };
 };
 

@@ -20,9 +20,9 @@ const state = reactive<any>({
 });
 
 const getData = () => {
-  leftBottom( { limitNum: 20 })
+  leftBottom({ limitNum: 20 })
     .then((res) => {
-      console.log("左下--设备提醒", res);
+      console.log("左下--急救通道与出车动态", res);
       if (res.success) {
         state.list = res.data.list;
       } else {
@@ -39,9 +39,9 @@ const getData = () => {
 const addressHandle = (item: any) => {
   let name = item.provinceName;
   if (item.cityName) {
-    name += "/" + item.cityName;
+    name += " · " + item.cityName;
     if (item.countyName) {
-      name += "/" + item.countyName;
+      name += " [" + item.countyName + "]";
     }
   }
   return name;
@@ -78,7 +78,7 @@ onMounted(() => {
             <div class="dibu"></div>
             <div class="flex">
               <div class="info">
-                <span class="labels">设备ID：</span>
+                <span class="labels">急救车号：</span>
                 <span class="text-content zhuyao doudong wangguan"> {{ item.gatewayno }}</span>
               </div>
               <div class="info">
@@ -93,11 +93,11 @@ onMounted(() => {
                 typeRed: item.onlineState == 0,
                 typeGreen: item.onlineState == 1,
               }"
-              >{{ item.onlineState == 1 ? "上线" : "下线" }}</span
+              >{{ item.onlineState == 1 ? "已送达" : "转运中" }}</span
             >
 
             <div class="info addresswrap">
-              <span class="labels">地址：</span>
+              <span class="labels">接诊院区：</span>
               <span class="text-content ciyao" style="font-size: 12px"> {{ addressHandle(item) }}</span>
             </div>
           </div>
@@ -195,25 +195,25 @@ onMounted(() => {
       color: #1890ff;
       font-weight: 900;
       font-size: 15px;
-      width: 80px;
+      width: 100px;
       flex-shrink: 0;
     }
 
     .time {
       font-size: 12px;
-      // color: rgba(211, 210, 210,.8);
       color: #fff;
     }
 
     .address {
       font-size: 12px;
       cursor: pointer;
-      // @include text-overflow(1);
     }
 
     .types {
-      width: 30px;
+      width: 48px;
       flex-shrink: 0;
+      font-size: 12px;
+      text-align: right;
     }
 
     .typeRed {

@@ -6,7 +6,7 @@ import { ElMessage } from "element-plus";
 
 const config = ref({
   showValue: true,
-  unit: "次",
+  unit: "人次",
 });
 const data = ref([]);
 const getData = () => {

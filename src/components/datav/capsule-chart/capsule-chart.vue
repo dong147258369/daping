@@ -1,186 +1,234 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch } from "vue";
 import type { DefaultConfigType } from "./index.d";
-import { cloneDeep } from "lodash-es";
-import { merge } from "lodash-es";
+import { cloneDeep, merge } from "lodash-es";
+
 const mergedConfig = ref<any>(null);
 const capsuleLength = ref<number[]>([]);
 const capsuleValue = ref<number[]>([]);
 const labelData = ref<number[]>([]);
-// const labelDataLength = ref<any>([]);
 
 const defaultConfig = reactive<DefaultConfigType>({
-    // Colors (hex|rgb|rgba|color keywords) ['#000', 'rgb(0, 0, 0)', 'rgba(0, 0, 0, 1)', 'red']
-    colors: [
-        "#37a2da",
-        "#32c5e9",
-        "#67e0e3",
-        "#9fe6b8",
-        "#ffdb5c",
-        "#ff9f7f",
-        "#fb7293",
-    ],
-    unit: "",
-    showValue: false, // Show item value
+  colors: [
+    "linear-gradient(90deg, #00f2fe 0%, #4facfe 100%)",
+    "linear-gradient(90deg, #43e97b 0%, #38f9d7 100%)",
+    "linear-gradient(90deg, #fa709a 0%, #fee140 100%)",
+    "linear-gradient(90deg, #30cfd0 0%, #330867 100%)",
+    "linear-gradient(90deg, #a18cd1 0%, #fbc2eb 100%)",
+    "linear-gradient(90deg, #f093fb 0%, #f5576c 100%)",
+    "linear-gradient(90deg, #4facfe 0%, #00f2fe 100%)",
+    "linear-gradient(90deg, #5ee7df 0%, #b490ca 100%)",
+  ],
+  unit: "",
+  showValue: true,
 });
+
 const props = withDefaults(
-    defineProps<{
-        config: object | any;
-        data: Array<{
-            name: string;
-            value: string | number;
-        }>;
-    }>(),
-    {
-        config: () => { },
-        data: () => [],
-    }
+  defineProps<{
+    config: object | any;
+    data: Array<{
+      name: string;
+      value: string | number;
+    }>;
+  }>(),
+  {
+    config: () => ({}),
+    data: () => [],
+  }
 );
+
 const calcData = () => {
-    mergeConfig();
-    calcCapsuleLengthAndLabelData();
+  mergeConfig();
+  calcCapsuleLengthAndLabelData();
 };
+
 const mergeConfig = () => {
-    mergedConfig.value = merge(cloneDeep(defaultConfig), props.config || {});
+  mergedConfig.value = merge(cloneDeep(defaultConfig), props.config || {});
 };
+
 const calcCapsuleLengthAndLabelData = () => {
-    if (!props.data.length) return;
-    const newcapsuleValue = props.data.map((item: any) => Number(item.value));
-    const maxValue = Math.max(...newcapsuleValue);
-    capsuleValue.value = newcapsuleValue;
-    capsuleLength.value = newcapsuleValue.map((v: any) =>
-        maxValue ? v / maxValue : 0
-    );
-    const oneFifth = maxValue / 5;
-    const newlabelData = Array.from(
-        new Set(new Array(6).fill(0).map((v, i) => Math.ceil(i * oneFifth)))
-    );
-    labelData.value = newlabelData;
-    // labelDataLength.value = Array.from(newlabelData).map((v) =>
-    //     maxValue ? v / maxValue : 0
-    // );
-    // console.log(labelDataLength.value);
+  if (!props.data.length) return;
+  const newcapsuleValue = props.data.map((item: any) => Number(item.value));
+  const maxValue = Math.max(...newcapsuleValue);
+  capsuleValue.value = newcapsuleValue;
+  capsuleLength.value = newcapsuleValue.map((v: any) =>
+    maxValue ? v / maxValue : 0
+  );
+  const oneFifth = maxValue / 5;
+  const newlabelData = Array.from(
+    new Set(new Array(6).fill(0).map((v, i) => Math.ceil(i * oneFifth)))
+  );
+  labelData.value = newlabelData;
 };
-watch(
-    () => props.data,
-    (newval: any) => {
-        calcData();
-    },
-);
-watch(
-    () => props.config,
-    (newval: any) => {
-        calcData();
-    },
-);
+
+watch(() => props.data, () => calcData(), { deep: true });
+watch(() => props.config, () => calcData(), { deep: true });
+
 onMounted(() => {
-    calcData();
+  calcData();
 });
 </script>
 
 <template>
-    <div class="dv-capsule-chart">
-        <template v-if="mergedConfig">
-            <div class="label-column">
-                <div v-for="item in data" :key="item.name">
-                    {{ item.name }}
-                </div>
-                <div>&nbsp;</div>
-            </div>
-            <div class="capsule-container">
-                <div class="capsule-item" v-for="(capsule, index) in capsuleLength" :key="index">
-                    <div class="capsule-item-column" :style="`width: ${capsule * 100}%; background-color: ${mergedConfig.colors[index % mergedConfig.colors.length]
-                    };`">
-                        <div v-if="mergedConfig.showValue" class="capsule-item-value">
-                            {{ capsuleValue[index] }}
-                        </div>
-                    </div>
-                </div>
+  <div class="dv-capsule-chart">
+    <template v-if="mergedConfig">
+      <div class="capsule-list">
+        <div class="capsule-row" v-for="(item, index) in data" :key="item.name">
+          <!-- 排名序号角标 -->
+          <span
+            class="rank-badge"
+            :class="{
+              'rank-top1': index === 0,
+              'rank-top2': index === 1,
+              'rank-top3': index === 2,
+            }"
+          >
+            0{{ index + 1 }}
+          </span>
 
-                <div class="unit-label">
-                    <div v-for="(label, index) in labelData" :key="label + index">
-                        {{ label }}
-                    </div>
-                </div>
-            </div>
+          <!-- 科室名称 -->
+          <div class="row-name" :title="item.name">{{ item.name }}</div>
 
-            <div class="unit-text" v-if="mergedConfig.unit">
-                {{ mergedConfig.unit }}
+          <!-- 发光胶囊主体 -->
+          <div class="row-track">
+            <div
+              class="row-bar"
+              :style="{
+                width: `${(capsuleLength[index] || 0) * 100}%`,
+                background: mergedConfig.colors[index % mergedConfig.colors.length],
+              }"
+            >
+              <div class="bar-shine"></div>
             </div>
-        </template>
-    </div>
+          </div>
+
+          <!-- 数值与单位 -->
+          <div class="row-value">
+            <span class="value-num">{{ item.value }}</span>
+            <span class="unit-span" v-if="mergedConfig.unit">{{ mergedConfig.unit }}</span>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
 </template>
 
 <style scoped lang="scss">
 .dv-capsule-chart {
-    position: relative;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  .capsule-list {
     display: flex;
-    flex-direction: row;
-    box-sizing: border-box;
-    padding: 10px;
-    color: #fff;
+    flex-direction: column;
+    justify-content: space-around;
+    height: 100%;
+    padding: 2px 0;
+  }
 
-    .label-column {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        box-sizing: border-box;
-        padding-right: 10px;
-        text-align: right;
-        font-size: 12px;
+  .capsule-row {
+    display: flex;
+    align-items: center;
+    margin: 3px 0;
 
-        div {
-            height: 20px;
-            line-height: 20px;
-        }
+    .rank-badge {
+      width: 22px;
+      height: 18px;
+      line-height: 18px;
+      text-align: center;
+      font-size: 11px;
+      font-weight: bold;
+      border-radius: 4px;
+      margin-right: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.6);
+      flex-shrink: 0;
+
+      &.rank-top1 {
+        background: linear-gradient(135deg, #ffd700, #ff8c00);
+        color: #fff;
+        box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+      }
+      &.rank-top2 {
+        background: linear-gradient(135deg, #00f2fe, #4facfe);
+        color: #fff;
+        box-shadow: 0 0 8px rgba(0, 242, 254, 0.6);
+      }
+      &.rank-top3 {
+        background: linear-gradient(135deg, #b372cf, #e0c3fc);
+        color: #fff;
+        box-shadow: 0 0 8px rgba(179, 114, 207, 0.6);
+      }
     }
 
-    .capsule-container {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+    .row-name {
+      width: 90px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.88);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex-shrink: 0;
     }
 
-    .capsule-item {
-        box-shadow: 0 0 3px #999;
-        height: 10px;
-        margin: 5px 0px;
-        border-radius: 5px;
+    .row-track {
+      flex: 1;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      margin: 0 10px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(0, 247, 246, 0.2);
 
-        .capsule-item-column {
-            position: relative;
-            height: 8px;
-            margin-top: 1px;
-            border-radius: 5px;
-            transition: all 0.3s;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-
-            .capsule-item-value {
-                font-size: 12px;
-                transform: translateX(100%);
-            }
-        }
-    }
-
-    .unit-label {
-        height: 20px;
-        font-size: 12px;
+      .row-bar {
+        height: 100%;
+        border-radius: 6px;
+        transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+
+        .bar-shine {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.5) 50%,
+            rgba(255, 255, 255, 0) 100%
+          );
+          opacity: 0.6;
+          border-radius: 6px;
+        }
+      }
     }
 
-    .unit-text {
-        text-align: right;
-        display: flex;
-        align-items: flex-end;
-        font-size: 12px;
-        line-height: 20px;
-        margin-left: 10px;
+    .row-value {
+      width: 65px;
+      text-align: right;
+      flex-shrink: 0;
+
+      .value-num {
+        font-size: 14px;
+        font-weight: bold;
+        color: #00f7f6;
+        text-shadow: 0 0 6px rgba(0, 247, 246, 0.6);
+      }
+
+      .unit-span {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.6);
+        margin-left: 3px;
+      }
     }
+  }
 }
 </style>
